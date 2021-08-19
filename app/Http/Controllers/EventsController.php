@@ -190,17 +190,45 @@ class EventsController extends BaseController
     {
         try 
         {
-            $events = Event::with(['workshops' => function($q){
-                                $q->where('workshops.start', '>', date('Y-m-d H:i:s'));
-                            }])
+            $events = Event::select(
+                                'events.name as event_name',
+                                'events.created_at as event_created_at',
+                                'events.updated_at as event_updated_at',
+                                'workshops.*'
+                            )
                             ->join('workshops', function($q){
                                 $q->on('workshops.event_id', 'events.id');
                             })
                             ->where('workshops.start', '>', date('Y-m-d H:i:s'))
-                            ->groupBy('events.id')
-                            ->get();
+                            ->get()->toArray();
 
-            return response()->json($events, '200');
+            if(!empty($events))
+            {
+                foreach($events as $event)
+                {
+                    if(empty($data[$event['event_id']]))
+                    {
+                        $data[$event['event_id']] = array(
+                                                        'id' => $event['event_id'],
+                                                        'name' => $event['event_name'],
+                                                        'updated_at' => $event['event_created_at'],
+                                                        'updated_at' => $event['event_updated_at'],
+                                                    );
+                    }
+
+                    $data[$event['event_id']]['workshops'][] = array(
+                                                                    "id"=> $event['id'],
+                                                                    "start"=> $event['start'],
+                                                                    "end"=> $event['end'],
+                                                                    "event_id"=> $event['event_id'],
+                                                                    "name"=> $event['name'],
+                                                                    "created_at"=> $event['created_at'],
+                                                                    "updated_at"=> $event['updated_at']
+                                                                ); 
+                }
+            }
+            
+            return response()->json($data, '200');
         } 
         catch (Exception $e) 
         {
