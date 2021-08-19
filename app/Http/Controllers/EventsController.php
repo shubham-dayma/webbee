@@ -197,6 +197,7 @@ class EventsController extends BaseController
                                 $q->on('workshops.event_id', 'events.id');
                             })
                             ->where('workshops.start', '>', date('Y-m-d H:i:s'))
+                            ->groupBy('events.id')
                             ->get();
 
             return response()->json($events, '200');
