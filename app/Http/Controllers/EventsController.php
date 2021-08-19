@@ -107,9 +107,8 @@ class EventsController extends BaseController
         catch (Exception $e) 
         {
             
-            return false;    
+            return response()->json('Bad Request', '400');;    
         }
-        // throw new \Exception('implement in coding task 1');
     }
 
 
